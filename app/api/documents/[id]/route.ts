@@ -60,19 +60,56 @@ export async function PUT(
       );
     }
 
-    const body = await request.json();
-    const { nombre, descripcion } = body;
+    let body: unknown;
 
-    if (!nombre && descripcion === undefined) {
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON body' },
+        { status: 400 }
+      );
+    }
+
+    if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+      return NextResponse.json(
+        { success: false, error: 'Body must be a JSON object' },
+        { status: 400 }
+      );
+    }
+
+    const { nombre, descripcion } = body as Record<string, unknown>;
+
+    if (nombre === undefined && descripcion === undefined) {
       return NextResponse.json(
         { success: false, error: 'At least one field must be provided' },
         { status: 400 }
       );
     }
 
-    const updateData: any = {};
-    if (nombre) updateData.nombre = nombre;
-    if (descripcion !== undefined) updateData.descripcion = descripcion;
+    const updateData: { nombre?: string; descripcion?: string } = {};
+
+    if (nombre !== undefined) {
+      if (typeof nombre !== 'string' || nombre.trim().length === 0) {
+        return NextResponse.json(
+          { success: false, error: 'nombre must be a non-empty string' },
+          { status: 400 }
+        );
+      }
+
+      updateData.nombre = nombre.trim();
+    }
+
+    if (descripcion !== undefined) {
+      if (typeof descripcion !== 'string') {
+        return NextResponse.json(
+          { success: false, error: 'descripcion must be a string' },
+          { status: 400 }
+        );
+      }
+
+      updateData.descripcion = descripcion.trim();
+    }
 
     const db = await getDatabase();
     const collection = db.collection('documents');
@@ -130,12 +167,7 @@ export async function DELETE(
       );
     }
 
-    try {
-      await deleteFromS3(document.s3Key);
-    } catch (s3Error) {
-      console.error('S3 deletion warning:', s3Error);
-    }
-
+    await deleteFromS3(document.s3Key);
     await collection.deleteOne({ _id: new ObjectId(id) });
 
     return NextResponse.json({

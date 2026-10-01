@@ -1,0 +1,45 @@
+stages:
+  - test
+
+variables:
+  NODE_IMAGE: "node@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6"
+
+quality:
+  stage: test
+  tags:
+    - videovault-local
+  timeout: 15m
+  script:
+    - |
+      set -euo pipefail
+
+      NODE="documents-ci-${CI_JOB_ID}"
+
+      cleanup() {
+        docker rm -f -v "$NODE" >/dev/null 2>&1 || true
+      }
+      trap cleanup EXIT
+
+      docker pull "$NODE_IMAGE"
+
+      docker run -d \
+        --name "$NODE" \
+        --workdir /app \
+        --env CI=true \
+        --env NEXT_TELEMETRY_DISABLED=1 \
+        "$NODE_IMAGE" \
+        tail -f /dev/null
+
+      for item in \
+        package.json package-lock.json \
+        tsconfig.json next.config.ts postcss.config.mjs \
+        vitest.config.mts \
+        app components lib public tests
+      do
+        docker cp "$item" "${NODE}:/app/"
+      done
+
+      docker exec "$NODE" npm ci --include=dev
+      docker exec "$NODE" npm test
+      docker exec "$NODE" npm run build
+      docker exec "$NODE" npm audit --audit-level=high
