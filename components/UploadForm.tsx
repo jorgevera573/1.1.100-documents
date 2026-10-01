@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, ChangeEvent, useState } from 'react';
+import { FormEvent, useState } from 'react';
 
 interface UploadFormProps {
   onSuccess: () => void;

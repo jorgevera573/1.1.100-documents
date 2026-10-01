@@ -1,9 +1,10 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import type { DocumentDTO } from '@/lib/types';
 
 interface MetadataEditorProps {
-  document: any;
+  document: DocumentDTO;
   onSuccess: () => void;
   onCancel: () => void;
 }

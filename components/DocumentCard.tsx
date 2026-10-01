@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Document } from '@/lib/types';
+import type { DocumentDTO } from '@/lib/types';
 import MetadataEditor from './MetadataEditor';
 
 interface DocumentCardProps {
-  document: any;
+  document: DocumentDTO;
   onDelete: (id: string) => void;
   onUpdate: () => void;
 }
@@ -33,7 +33,7 @@ export default function DocumentCard({ document: doc, onDelete, onUpdate }: Docu
       }
 
       onDelete(id);
-    } catch (error) {
+    } catch {
       alert('Failed to delete document');
     } finally {
       setIsDeleting(false);
@@ -57,7 +57,7 @@ export default function DocumentCard({ document: doc, onDelete, onUpdate }: Docu
       a.click();
       window.URL.revokeObjectURL(url);
       window.document.body.removeChild(a);
-    } catch (error) {
+    } catch {
       alert('Failed to download document');
     } finally {
       setIsDownloading(false);
@@ -83,7 +83,7 @@ export default function DocumentCard({ document: doc, onDelete, onUpdate }: Docu
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+      <div className="min-w-0 break-words bg-white rounded-lg shadow-md p-6 border border-gray-200">
       {isEditing ? (
         <MetadataEditor
           document={doc}
@@ -113,7 +113,7 @@ export default function DocumentCard({ document: doc, onDelete, onUpdate }: Docu
             </div>
           </div>
 
-          <div className="flex gap-2 pt-4 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
             <button
               onClick={() => setIsEditing(true)}
               className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-md font-medium hover:bg-amber-700 text-sm"

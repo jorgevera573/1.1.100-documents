@@ -138,30 +138,7 @@ export async function downloadFromS3(key: string): Promise<Buffer> {
       throw new Error('Empty response body');
     }
 
-    const chunks: Uint8Array[] = [];
-
-    if (response.Body instanceof Uint8Array) {
-      chunks.push(response.Body);
-    } else if (response.Body instanceof Buffer) {
-      chunks.push(response.Body);
-    } else if (typeof response.Body === 'string') {
-      chunks.push(new TextEncoder().encode(response.Body));
-    } else {
-      const readable = response.Body as any;
-      if (readable.on && typeof readable.on === 'function') {
-        await new Promise<void>((resolve, reject) => {
-          readable.on('data', (chunk: Uint8Array) => {
-            chunks.push(chunk);
-          });
-          readable.on('end', () => {
-            resolve();
-          });
-          readable.on('error', reject);
-        });
-      }
-    }
-
-    return Buffer.concat(chunks.map(chunk => Buffer.from(chunk)));
+    return Buffer.from(await response.Body.transformToByteArray());
   } catch (error) {
     console.error('S3 download error:', error);
     throw new Error('Failed to download file from S3');

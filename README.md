@@ -10,6 +10,7 @@ Con este proyecto el alumno practica:
 - El uso del **SDK de AWS S3** (`@aws-sdk/client-s3`) y de URLs prefirmadas (`@aws-sdk/s3-request-presigner`).
 - La creación de **API Routes** en Next.js (App Router) como backend.
 - Componentes React cliente que consumen esa API.
+- Requisito : Node.js 24.x
 
 ## 🏗️ Arquitectura
 
@@ -89,8 +90,55 @@ S3_REGION=us-east-1
 3. Instala dependencias y arranca:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-4. Abre [http://localhost:3000](http://localhost:3000).
+4. Abre [http://localhost:9000](http://localhost:3000).
+
+## Verificación de calidad
+
+```bash
+npm run lint
+npm test
+npm run build
+npm audit
+```
+
+Las 19 pruebas automatizadas verifican las rutas con MongoDB y S3
+simulados, incluyendo validaciones y recuperación ante fallos.
+La comprobación funcional con servicios reales incluye subida,
+búsqueda, edición, descarga y borrado.
+
+El pipeline de GitLab ejecuta ESLint, pruebas, compilación y auditoría
+de dependencias dentro de un contenedor temporal de Node.js.
+Requiere Docker Desktop y el runner local activos.
+La compilación descarga las fuentes de Google Fonts.
+
+## Almacenamiento local y diagnóstico
+
+El servicio S3 debe estar activo y el bucket configurado en `S3_BUCKET`
+debe existir. Las credenciales se guardan en `.env.local`.
+
+En el entorno local utilizado para esta práctica, el servicio S3
+corresponde al contenedor existente `videovault-rustfs`, con la API
+publicada en el puerto 9000:
+
+```powershell
+docker start videovault-rustfs
+```
+
+- `ECONNREFUSED`: comprobar que el servicio está activo y que
+  `S3_ENDPOINT` apunta al puerto de la API.
+- `NoSuchBucket`: crear el bucket configurado antes de subir documentos.
+- `EADDRINUSE`: el puerto de Next.js ya está ocupado por otro proceso.
+
+Para ejecutar la versión compilada en un puerto alternativo:
+
+```bash
+npm start -- --port 3003
+```
+
+MongoDB y S3 no comparten una transacción atómica. Si falla la inserción
+de metadatos, la aplicación intenta retirar el archivo subido. Si falla
+el borrado en S3, conserva los metadatos para permitir un reintento.

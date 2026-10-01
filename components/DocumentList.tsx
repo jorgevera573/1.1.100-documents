@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import DocumentCard from './DocumentCard';
+import type { DocumentDTO } from '@/lib/types';
 
 interface DocumentListProps {
   searchQuery: string;
@@ -9,7 +10,7 @@ interface DocumentListProps {
 }
 
 export default function DocumentList({ searchQuery, refreshTrigger }: DocumentListProps) {
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<DocumentDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [total, setTotal] = useState(0);
@@ -71,7 +72,7 @@ export default function DocumentList({ searchQuery, refreshTrigger }: DocumentLi
       <h2 className="text-xl font-bold mb-4 text-gray-900">
         {searchQuery ? `Search Results` : 'All Documents'} ({total})
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {documents.map((doc) => (
           <DocumentCard
             key={doc._id?.toString() || doc._id}

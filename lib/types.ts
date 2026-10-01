@@ -20,3 +20,8 @@ export interface SearchParams {
   limit?: number;
   skip?: number;
 }
+// Los datos enviados por la API contienen fechas e identificadores como texto.
+export type DocumentDTO = Omit<Document, '_id' | 'fecha'> & {
+  _id: string;
+  fecha: string;
+};

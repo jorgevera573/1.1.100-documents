@@ -33,13 +33,14 @@ quality:
       for item in \
         package.json package-lock.json \
         tsconfig.json next.config.ts postcss.config.mjs \
-        vitest.config.mts \
+        vitest.config.mts eslint.config.mjs \
         app components lib public tests
       do
         docker cp "$item" "${NODE}:/app/"
       done
 
       docker exec "$NODE" npm ci --include=dev
+      docker exec "$NODE" npm run lint
       docker exec "$NODE" npm test
       docker exec "$NODE" npm run build
       docker exec "$NODE" npm audit --audit-level=high
